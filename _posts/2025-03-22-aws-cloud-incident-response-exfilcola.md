@@ -3,10 +3,10 @@ layout: post
 title: "AWS Cloud Incident Response — ExfilCola"
 tags: [Incident Response]
 excerpt: "A simulated AWS breach via the Wiz Cloud Hunting Games CTF — IAM abuse, CloudTrail, lateral movement, and recovering deleted auth logs with overlayfs."
-writeup_assets: aws-cloud-incident-response-exfilcola
+article_assets: aws-cloud-incident-response-exfilcola
 ---
 
-{% assign asset_base = '/writeups/' | append: page.writeup_assets %}
+{% assign asset_base = '/articles/' | append: page.article_assets %}
 
 > **Wiz Cloud Hunting Games CTF** · Cloud Forensics · MITRE ATT&CK · AWS IR  
 > *Techniques: IAM role abuse · CloudTrail analysis · Lateral movement · Overlayfs recovery*

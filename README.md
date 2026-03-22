@@ -26,22 +26,22 @@ Personal site at [https://am-netizen.github.io/locus](https://am-netizen.github.
 
 4. **Commit and push** to `main`. GitHub Pages rebuilds automatically; the post appears on the homepage in the “Recent writing” list (newest first). No need to edit `index.html`.
 
-### Files tied to one article (evidence, queries, images)
+### Files tied to one post (evidence, queries, images)
 
-Keep everything for a given post under **`writeups/<slug>/`**, where **`<slug>`** is the part of the post filename after the date.
+Keep everything for a given post under **`articles/<slug>/`**, where **`<slug>`** is the part of the post filename after the date.
 
-Example: post `_posts/2025-03-22-aws-cloud-incident-response-exfilcola.md` → folder **`writeups/aws-cloud-incident-response-exfilcola/`** (e.g. `attack-navigator/`, `queries/`, `evidence/`). That keeps the repo root clean and groups assets with the write-up.
+Example: post `_posts/2025-03-22-aws-cloud-incident-response-exfilcola.md` → folder **`articles/aws-cloud-incident-response-exfilcola/`** (e.g. `attack-navigator/`, `queries/`, `evidence/`). That keeps the repo root clean and groups assets with that post, whether it’s a long write-up or a short note.
 
 In that post’s front matter, set:
 
 ```yaml
-writeup_assets: aws-cloud-incident-response-exfilcola
+article_assets: aws-cloud-incident-response-exfilcola
 ```
 
 Right after the front matter (first lines of the body), add:
 
 ```liquid
-{% assign asset_base = '/writeups/' | append: page.writeup_assets %}
+{% assign asset_base = '/articles/' | append: page.article_assets %}
 ```
 
 Link to files with the `relative_url` filter so `baseurl` stays correct:
@@ -50,7 +50,7 @@ Link to files with the `relative_url` filter so `baseurl` stays correct:
 {{ asset_base | append: '/evidence/screenshot.png' | relative_url }}
 ```
 
-Posts with no extra files can omit `writeup_assets` and this block.
+Posts with no extra files can omit `article_assets` and this block.
 
 ### Excerpts on the homepage
 
