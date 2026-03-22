@@ -27,7 +27,7 @@ The sections below map the full attack chain to MITRE ATT&CK, surface the detect
 
 ## ATT&CK coverage
 
-> 📎 [View full ATT&CK Navigator layer]({{ asset_base | append: '/attack-navigator/layer.json' | relative_url }})
+> [View full ATT&CK Navigator layer]({{ asset_base | append: '/attack-navigator/layer.json' | relative_url }})
 
 ![MITRE ATT&CK Heatmap]({{ asset_base | append: '/attack-navigator/heatmap.png' | relative_url }})
 
@@ -37,9 +37,9 @@ The defence evasion technique was particularly notable. Deleting auth logs from 
 
 | Technique ID | Name | Phase | Evidence |
 |---|---|---|---|
-| [T1078.004](https://attack.mitre.org/techniques/T1078/004/) | Valid Accounts: Cloud Accounts | Initial Access | `[TO COMPLETE — initial IAM identity]` |
+| [T1078.004](https://attack.mitre.org/techniques/T1078/004/) | Valid Accounts: Cloud Accounts | Initial Access | Compromised IAM principal; initial access visible in CloudTrail `userIdentity` / session context |
 | [T1526](https://attack.mitre.org/techniques/T1526/) | Cloud Service Discovery | Discovery | ListBuckets, ListObjects reconnaissance |
-| [T1069.003](https://attack.mitre.org/techniques/T1069/003/) | Permission Groups Discovery: Cloud Groups | Discovery | `[TO COMPLETE]` |
+| [T1069.003](https://attack.mitre.org/techniques/T1069/003/) | Permission Groups Discovery: Cloud Groups | Discovery | IAM and permission-group style discovery via AWS APIs (CloudTrail) |
 | [T1548](https://attack.mitre.org/techniques/T1548/) | Abuse Elevation Control Mechanism | Privilege Escalation | AssumeRole chain across IAM identities |
 | [T1098.001](https://attack.mitre.org/techniques/T1098/001/) | Account Manipulation: Additional Cloud Credentials | Persistence | PutSecretValue — IAM keys stored in Secrets Manager |
 | [T1530](https://attack.mitre.org/techniques/T1530/) | Data from Cloud Storage Object | Exfiltration | GetObject — bulk read of recipe bucket |
@@ -59,13 +59,13 @@ The break came from searching `requestparameters` rather than the identity colum
 
 **Finding 2 — Lambda weaponisation is harder to detect than new resource creation**
 
-Once the attacker reached the EC2 instance (`i-0a44002eec2f16c25`) operating under the lambdaWorker role, they called `UpdateFunctionCode` against an existing Lambda named `credsrotator` — a legitimate credential rotation function with elevated Secrets Manager permissions. The injected code executed `PutSecretValue`, storing stolen IAM access keys under `IAMAccessKeys-63q8dd`.
+Once the attacker reached the target EC2 instance (challenge lab host, role `lambdaWorker`), they called `UpdateFunctionCode` against an existing Lambda named `credsrotator` — a legitimate credential rotation function with elevated Secrets Manager permissions. The injected code executed `PutSecretValue`, storing stolen IAM access keys in a Secrets Manager entry used for key material in the scenario.
 
 This technique is more operationally sound than spinning up new infrastructure. The Lambda was already trusted, its permissions were pre-existing, and its execution pattern blended into normal operations. There was no new resource to detect, no unusual IAM entity — just a function that had always existed doing something slightly different. Without code signing or alerting on `UpdateFunctionCode` events from unexpected principals, this change was effectively invisible.
 
 **Finding 3 — Deleted logs aren't always gone**
 
-On the compromised EC2 host, auth logs had been deleted — a reasonable countermeasure. But the filesystem was running overlayfs, which maintains a lower read-only layer beneath the writable upper layer. Unmounting the upper layer exposed the preserved auth logs underneath, recovering the attacker's source IP and confirming the SSH lateral movement path.
+On the compromised EC2 host, auth logs had been deleted — a reasonable countermeasure. But the filesystem was running overlayfs, which maintains a lower read-only layer beneath the writable upper layer. Unmounting the upper layer exposed the preserved auth logs underneath, recovering the source address seen in auth data and confirming the SSH lateral movement path.
 
 The lesson isn't just forensic technique — it's that attacker OPSEC assumptions about cloud infrastructure are often wrong. Deleting a file on what appears to be a standard Linux filesystem doesn't account for container runtimes, layered filesystems, or snapshot-based storage. Cloud environments preserve more than attackers expect.
 
