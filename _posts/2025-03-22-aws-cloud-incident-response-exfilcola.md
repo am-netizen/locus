@@ -1,4 +1,9 @@
-# AWS Cloud Incident Response — ExfilCola
+---
+layout: post
+title: "AWS Cloud Incident Response — ExfilCola"
+tags: [Incident Response]
+excerpt: "A simulated AWS breach via the Wiz Cloud Hunting Games CTF — IAM abuse, CloudTrail, lateral movement, and recovering deleted auth logs with overlayfs."
+---
 
 > **Wiz Cloud Hunting Games CTF** · Cloud Forensics · MITRE ATT&CK · AWS IR  
 > *Techniques: IAM role abuse · CloudTrail analysis · Lateral movement · Overlayfs recovery*
@@ -15,9 +20,9 @@ What made this tractable as an investigation was logging hygiene — S3 data eve
 
 ## ATT&CK coverage
 
-> 📎 [View full ATT&CK Navigator layer](./attack-navigator/layer.json)
+> 📎 [View full ATT&CK Navigator layer]({{ "/attack-navigator/layer.json" | relative_url }})
 
-![MITRE ATT&CK Heatmap](./attack-navigator/heatmap.png)
+![MITRE ATT&CK Heatmap]({{ "/attack-navigator/heatmap.png" | relative_url }})
 
 <!-- Add 1–2 paragraphs here: which techniques appeared, why they matter, what surprised you -->
 
@@ -64,11 +69,11 @@ What made this tractable as an investigation was logging hygiene — S3 data eve
 
 | Artifact | Description |
 |---|---|
-| [`attack-navigator/layer.json`](./attack-navigator/layer.json) | ATT&CK Navigator layer — import at [attack.mitre.org](https://mitre-attack.github.io/attack-navigator/) |
-| [`queries/cloudtrail.sql`](./queries/cloudtrail.sql) | CloudTrail SQL queries used during investigation |
-| [`queries/s3_events.sql`](./queries/s3_events.sql) | S3 data event queries |
-| [`evidence/`](./evidence/) | Sanitised log snippets and screenshots |
+| [`attack-navigator/layer.json`]({{ "/attack-navigator/layer.json" | relative_url }}) | ATT&CK Navigator layer — import at [attack.mitre.org](https://mitre-attack.github.io/attack-navigator/) |
+| [`queries/cloudtrail.sql`]({{ "/queries/cloudtrail.sql" | relative_url }}) | CloudTrail SQL queries used during investigation |
+| [`queries/s3_events.sql`]({{ "/queries/s3_events.sql" | relative_url }}) | S3 data event queries |
+| [`evidence/`]({{ "/evidence/" | relative_url }}) | Sanitised log snippets and screenshots |
 
 ---
 
-*Part of my [security portfolio](https://github.com/[your-username]) — mapping hands-on work to real-world attack patterns.*
+*Part of my [security portfolio](https://github.com/am-netizen) — mapping hands-on work to real-world attack patterns.*
