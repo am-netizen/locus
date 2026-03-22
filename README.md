@@ -28,20 +28,20 @@ Personal site at [https://am-netizen.github.io/locus](https://am-netizen.github.
 
 ### Files tied to one post (evidence, queries, images)
 
-Keep everything for a given post under **`articles/<slug>/`**, where **`<slug>`** is the part of the post filename after the date.
+Keep everything for a given post under **`assets/<slug>/`**, where **`<slug>`** is the part of the post filename after the date.
 
-Example: post `_posts/2025-03-22-aws-cloud-incident-response-exfilcola.md` → folder **`articles/aws-cloud-incident-response-exfilcola/`** (e.g. `attack-navigator/`, `queries/`, `evidence/`). That keeps the repo root clean and groups assets with that post, whether it’s a long write-up or a short note.
+Example: post `_posts/2025-03-22-aws-cloud-incident-response-exfilcola.md` → folder **`assets/aws-cloud-incident-response-exfilcola/`** (e.g. `attack-navigator/`, `queries/`, `evidence/`). That keeps the repo root clean and groups files with that post.
 
 In that post’s front matter, set:
 
 ```yaml
-article_assets: aws-cloud-incident-response-exfilcola
+assets_dir: aws-cloud-incident-response-exfilcola
 ```
 
 Right after the front matter (first lines of the body), add:
 
 ```liquid
-{% assign asset_base = '/articles/' | append: page.article_assets %}
+{% assign asset_base = '/assets/' | append: page.assets_dir %}
 ```
 
 Link to files with the `relative_url` filter so `baseurl` stays correct:
@@ -50,7 +50,7 @@ Link to files with the `relative_url` filter so `baseurl` stays correct:
 {{ asset_base | append: '/evidence/screenshot.png' | relative_url }}
 ```
 
-Posts with no extra files can omit `article_assets` and this block.
+Posts with no extra files can omit `assets_dir` and this block.
 
 ### Excerpts on the homepage
 
