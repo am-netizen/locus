@@ -1,79 +1,119 @@
 # Locus — Jekyll blog
 
-Personal site at [https://am-netizen.github.io/locus](https://am-netizen.github.io/locus). GitHub Pages builds the site from this repo with Jekyll (no theme; layouts live in `_layouts/`).
+Site: [https://am-netizen.github.io/locus](https://am-netizen.github.io/locus).  
+GitHub Pages builds this repo with Jekyll. There is **no theme**; layout and styles live in `_layouts/`.
 
-## Publishing a new post
+---
 
-1. Create a file under `_posts/` named **`YYYY-MM-DD-short-title.md`**  
-   Example: `_posts/2025-03-22-cloud-breach-notes.md`  
-   The date is the post date; the slug becomes part of the URL.
+## Publish a new post
 
-2. Put this **front matter** at the very top (between the `---` lines):
+### 1. Choose the filename (this sets the URL slug)
 
-   ```yaml
-   ---
-   layout: post
-   title: "Your post title"
-   tags: [Incident Response]
-   ---
-   ```
+Create **`_posts/YYYY-MM-DD-<slug>.md`**.
 
-   - **layout:** must be `post` for normal articles.
-   - **title:** shown on the homepage and at the top of the post.
-   - **tags:** optional list. The **first** tag is shown on the homepage and as the label above the post title.
+- **`YYYY-MM-DD`** — post date (used in the URL and ordering).
+- **`<slug>`** — everything after the date and the hyphen, without `.md`.  
+  Example: `_posts/2025-03-22-aws-cloud-incident-response-exfilcola.md` → slug **`aws-cloud-incident-response-exfilcola`**.
 
-3. Write the body in **Markdown** below the closing `---`.
+The live post URL will look like:
 
-4. **Commit and push** to `main`. GitHub Pages rebuilds automatically; the post appears on the homepage in the “Recent writing” list (newest first). No need to edit `index.html`.
+`https://am-netizen.github.io/locus/2025/03/22/aws-cloud-incident-response-exfilcola/`  
+(paths follow `_config.yml`: `permalink: /:year/:month/:day/:title/` and `baseurl: "/locus"`).
 
-### Files tied to one post (evidence, queries, images)
+### 2. (Optional) Add files for that post under `assets/`
 
-Keep everything for a given post under **`assets/<slug>/`**, where **`<slug>`** is the part of the post filename after the date.
+If you need images, downloads, queries, evidence, etc., put them in:
 
-Example: post `_posts/2025-03-22-aws-cloud-incident-response-exfilcola.md` → folder **`assets/aws-cloud-incident-response-exfilcola/`** (e.g. `attack-navigator/`, `queries/`, `evidence/`). That keeps the repo root clean and groups files with that post.
+**`assets/<slug>/`**
 
-In that post’s front matter, set:
+Use the **same** `<slug>` as in the filename. Example:
 
-```yaml
-assets_dir: aws-cloud-incident-response-exfilcola
+```text
+assets/aws-cloud-incident-response-exfilcola/
+  attack-navigator/
+  queries/
+  evidence/
 ```
 
-Right after the front matter (first lines of the body), add:
+Nothing else is required at the repo root for post-specific files.
+
+### 3. Front matter
+
+At the top of the post file:
+
+```yaml
+---
+layout: post
+title: "Your post title"
+tags: [Incident Response]
+---
+```
+
+Optional lines (add only if you need them):
+
+| Field | When to use |
+|--------|-------------|
+| `excerpt: "Short summary"` | Shown on the homepage when `show_excerpts: true` in `_config.yml`. If omitted, Jekyll uses the first paragraph. |
+| `assets_dir: <slug>` | Required when you use **`assets/<slug>/`**. Value must match the slug from the filename (e.g. `aws-cloud-incident-response-exfilcola`). |
+
+The **first** entry in `tags` is shown on the homepage and above the post title.
+
+### 4. If you use `assets_dir`: base path + links
+
+Immediately **after** the closing `---` of the front matter, before normal Markdown, add:
 
 ```liquid
 {% assign asset_base = '/assets/' | append: page.assets_dir %}
 ```
 
-Link to files with the `relative_url` filter so `baseurl` stays correct:
+Then reference files with **`relative_url`** so `baseurl` (`/locus`) is applied on GitHub Pages:
 
 ```liquid
-{{ asset_base | append: '/evidence/screenshot.png' | relative_url }}
+![Description]({{ asset_base | append: '/evidence/screenshot.png' | relative_url }})
 ```
 
-Posts with no extra files can omit `assets_dir` and this block.
-
-### Excerpts on the homepage
-
-With `show_excerpts: true` in `_config.yml`, Jekyll uses the post excerpt on the index. By default that’s the first paragraph, or you can set it explicitly in front matter:
-
-```yaml
-excerpt: "One line summary for the listing."
+```liquid
+[Download layer]({{ asset_base | append: '/attack-navigator/layer.json' | relative_url }})
 ```
 
-## Editing static pages
+Posts with **no** `assets/<slug>/` folder should **not** set `assets_dir` and should **not** include the `asset_base` line.
 
-- **Homepage intro + post list:** `index.html` (uses `layout: default`).
-- **About page:** `about.md` (uses `layout: default`).
-- **Shared chrome (header, footer, CSS):** `_layouts/default.html`.
-- **Post chrome (title block, content wrapper):** `_layouts/post.html`.
-- **Site title, URL, base path:** `_config.yml` (`url`, `baseurl`, etc.).
+### 5. Body
+
+Write the rest in **Markdown** (Kramdown).
+
+### 6. Ship it
+
+Commit and push to **`main`**. The homepage listing updates automatically; you do not edit `index.html` per post.
+
+---
+
+## Excerpts on the homepage
+
+`_config.yml` has `show_excerpts: true`. Use `excerpt:` in front matter for a custom blurb, or rely on the first paragraph.
+
+---
+
+## Repo map
+
+| Path | Role |
+|------|------|
+| `_posts/` | Post sources (`YYYY-MM-DD-slug.md`) |
+| `_layouts/default.html` | Site chrome (header, footer, CSS) |
+| `_layouts/post.html` | Post title block + content wrapper |
+| `assets/<slug>/` | Static files for one post (optional) |
+| `index.html` | Homepage (intro + `site.posts` loop) |
+| `about.md` | About page |
+| `_config.yml` | `title`, `url`, `baseurl`, `permalink`, etc. |
+
+---
 
 ## Optional: preview locally
 
-If you have Ruby and Bundler, you can add a `Gemfile` with the `github-pages` or `jekyll` gem, run `bundle install`, then:
+Add a `Gemfile` with the `github-pages` or `jekyll` gem, run `bundle install`, then:
 
 ```bash
 bundle exec jekyll serve
 ```
 
-Open the URL it prints (often `http://127.0.0.1:4000/locus/` when using this repo’s `baseurl`).
+Open the URL Jekyll prints (with this repo’s settings, often **`http://127.0.0.1:4000/locus/`**).
