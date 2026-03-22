@@ -1,264 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A.M.</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+---
+layout: default
+---
 
-  <style>
-    :root {
-      --bg:        #111318;
-      --text:      #d8d4cc;
-      --muted:     #6b6860;
-      --dim:       #2e2e38;
-      --gold:      #b8944a;
-      --border:    #1e2028;
-      --serif:     'Lora', Georgia, serif;
-      --mono:      'DM Mono', monospace;
-    }
+<div style="padding: 4rem 0 3.5rem; border-bottom: 1px solid var(--border);">
+  <p style="font-size: 1.15rem; font-style: italic; color: var(--muted); line-height: 1.85; max-width: 520px;">
+    Writing about security, risk, and the way systems — and people — actually fail.
+  </p>
+</div>
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--serif);
-      font-size: 18px;
-      line-height: 1.75;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── LAYOUT WRAPPER ── */
-    .wrap {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 0 2rem;
-    }
-
-    /* ── HEADER ── */
-    header {
-      padding: 3.5rem 0 3rem;
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      color: var(--text);
-      text-decoration: none;
-    }
-
-    .logo span { color: var(--gold); }
-
-    nav a {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      margin-left: 2rem;
-      transition: color 0.2s;
-    }
-
-    nav a:hover { color: var(--text); }
-
-    /* ── INTRO ── */
-    .intro {
-      padding: 4rem 0 3.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .intro p {
-      font-size: 1.15rem;
-      font-style: italic;
-      color: var(--muted);
-      line-height: 1.85;
-      max-width: 520px;
-    }
-
-    /* ── POST LIST ── */
-    .posts {
-      padding: 3rem 0;
-    }
-
-    .posts-label {
-      font-family: var(--mono);
-      font-size: 0.6rem;
-      font-weight: 300;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--dim);
-      margin-bottom: 2.5rem;
-    }
-
-    .post {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      padding: 1.8rem 0;
-      border-bottom: 1px solid var(--border);
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .post:first-of-type {
-      border-top: 1px solid var(--border);
-    }
-
-    .post-top {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .post-title {
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: var(--text);
-      line-height: 1.4;
-      transition: color 0.2s;
-    }
-
-    .post:hover .post-title { color: var(--gold); }
-
-    .post-date {
-      font-family: var(--mono);
-      font-size: 0.58rem;
-      font-weight: 300;
-      color: var(--dim);
-      letter-spacing: 0.08em;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .post-excerpt {
-      font-size: 0.92rem;
-      font-style: italic;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .post-tag {
-      font-family: var(--mono);
-      font-size: 0.58rem;
-      font-weight: 300;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0.7;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      padding: 3rem 0;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    footer span {
-      font-family: var(--mono);
-      font-size: 0.58rem;
-      font-weight: 300;
-      color: var(--dim);
-      letter-spacing: 0.1em;
-    }
-
-    /* ── FADE IN ── */
-    .post {
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadein 0.5s ease forwards;
-    }
-
-    .post:nth-child(1) { animation-delay: 0.05s; }
-    .post:nth-child(2) { animation-delay: 0.12s; }
-    .post:nth-child(3) { animation-delay: 0.19s; }
-    .post:nth-child(4) { animation-delay: 0.26s; }
-
-    @keyframes fadein {
-      to { opacity: 1; transform: none; }
-    }
-
-    @media (max-width: 540px) {
-      .post-top { flex-direction: column; gap: 0.2rem; }
-      footer { flex-direction: column; gap: 0.5rem; }
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-
-    <header>
-      <a href="/" class="logo">A<span>.</span>M<span>.</span></a>
-      <nav>
-        <a href="#writing">Writing</a>
-        <a href="mailto:your@email.com">Contact</a>
-      </nav>
-    </header>
-
-    <div class="intro" id="about">
-      <p>Writing about security, risk, and how things actually break — technical and otherwise.</p>
-    </div>
-
-    <div class="posts" id="writing">
-      <div class="posts-label">Recent writing</div>
-
-      <a href="#" class="post">
-        <div class="post-top">
-          <div class="post-title">When the logs lie: lessons from a cloud intrusion</div>
-          <div class="post-date">Coming soon</div>
-        </div>
-        <div class="post-excerpt">What a simulated AWS compromise taught me about attacker patience, defender blindspots, and the gap between theory and reality.</div>
-        <div class="post-tag">Incident Response</div>
-      </a>
-
-      <a href="#" class="post">
-        <div class="post-top">
-          <div class="post-title">The human element never goes away</div>
-          <div class="post-date">Coming soon</div>
-        </div>
-        <div class="post-excerpt">Social engineering isn't a niche tactic. It's the default. And the industry keeps being surprised by this.</div>
-        <div class="post-tag">Threat Intelligence</div>
-      </a>
-
-      <a href="#" class="post">
-        <div class="post-top">
-          <div class="post-title">Risk registers don't make you secure</div>
-          <div class="post-date">Coming soon</div>
-        </div>
-        <div class="post-excerpt">On the difference between documenting risk and actually reducing it — and why compliance culture confuses the two.</div>
-        <div class="post-tag">Opinion</div>
-      </a>
-
-      <a href="#" class="post">
-        <div class="post-top">
-          <div class="post-title">Reading a network like a book</div>
-          <div class="post-date">Coming soon</div>
-        </div>
-        <div class="post-excerpt">Packet analysis, flow data, and developing the intuition that separates a good analyst from a great one.</div>
-        <div class="post-tag">Technical</div>
-      </a>
-
-    </div>
-
-    <footer>
-      <span>A.M.</span>
-      <span>© 2025</span>
-    </footer>
-
+<div style="padding: 3rem 0;">
+  <div style="font-family: var(--mono); font-size: 0.6rem; font-weight: 300; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-bottom: 2.5rem;">
+    Recent writing
   </div>
-</body>
-</html>
+
+  {% for post in site.posts %}
+  <a href="{{ post.url | prepend: site.baseurl }}" class="post-row">
+    <div class="post-top">
+      <div class="post-title">{{ post.title }}</div>
+      <div class="post-date">{{ post.date | date: "%b %Y" }}</div>
+    </div>
+    {% if post.excerpt %}
+    <div class="post-excerpt">{{ post.excerpt | strip_html | truncatewords: 24 }}</div>
+    {% endif %}
+    {% if post.tags[0] %}
+    <div class="post-tag">{{ post.tags[0] }}</div>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
