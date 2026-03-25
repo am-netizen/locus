@@ -28,6 +28,8 @@
       --brand-soft: #123243;
       --border: #28364d;
       --code-bg: #0d1526;
+      --code-inline-bg: #21314a;
+      --code-inline-text: #f8fafc;
       --card-hover: #16233a;
       --focus: #38bdf8;
       --shadow: 0 12px 32px rgba(2, 6, 23, 0.42);
@@ -45,6 +47,8 @@
       --brand-soft: #ccfbf1;
       --border: #dbe4ee;
       --code-bg: #f1f5f9;
+      --code-inline-bg: #e8eef6;
+      --code-inline-text: #0f172a;
       --card-hover: #f1f5f9;
       --focus: #0284c7;
       --shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
@@ -78,7 +82,7 @@
       top: 1rem;
     }
     .wrap {
-      width: min(960px, calc(100% - 1.5rem));
+      width: min(1200px, calc(100% - 1.5rem));
       margin: 1rem auto;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -144,7 +148,7 @@
       background: var(--code-bg);
     }
     .content {
-      padding: 1.6rem 1.35rem 2rem;
+      padding: 1.8rem 1.6rem 2.2rem;
     }
     footer {
       padding: 1rem 1.35rem;
@@ -182,7 +186,7 @@
       color: var(--soft);
     }
     .post-content {
-      max-width: 72ch;
+      max-width: 82ch;
       margin: 0 auto;
     }
     .post-content h1, .post-content h2, .post-content h3 {
@@ -204,10 +208,11 @@
     .post-content code {
       font-family: var(--mono);
       font-size: 0.86rem;
-      background: var(--code-bg);
-      padding: 0.15rem 0.35rem;
+      background: var(--code-inline-bg);
+      padding: 0.18rem 0.42rem;
       border-radius: 0.35rem;
-      color: var(--text);
+      color: var(--code-inline-text);
+      border: 1px solid var(--border);
     }
     .post-content pre {
       background: var(--code-bg);
@@ -254,7 +259,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.55rem;
-      padding: 1rem 1.05rem;
+      padding: 1.1rem 1.15rem;
       border: 1px solid var(--border);
       text-decoration: none;
       color: inherit;
@@ -292,17 +297,24 @@
       max-width: 12ch;
     }
     .post-excerpt {
-      font-size: 0.98rem;
+      font-size: 1rem;
       color: var(--muted);
-      line-height: 1.6;
+      line-height: 1.65;
       overflow-wrap: anywhere;
     }
     .post-tag {
       font-family: var(--mono);
-      font-size: 0.73rem;
+      font-size: 0.76rem;
       letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--brand);
+      display: inline-block;
+      width: fit-content;
+      background: var(--brand-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.56rem;
+      line-height: 1.3;
     }
     .post-header {
       padding: 0 0 1.1rem;
@@ -320,7 +332,8 @@
       background: var(--brand-soft);
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 0.2rem 0.52rem;
+      padding: 0.24rem 0.62rem;
+      line-height: 1.25;
     }
     .post-header h1 {
       font-size: clamp(1.55rem, 1.3rem + 1.2vw, 2.2rem);
@@ -367,7 +380,7 @@
         margin-left: 0.08rem;
       }
       .content {
-        padding: 1.15rem 0.85rem 1.3rem;
+        padding: 1.2rem 0.9rem 1.4rem;
       }
       .home-intro p {
         font-size: 1rem;
@@ -379,6 +392,9 @@
       .post-date {
         max-width: none;
         text-align: left;
+      }
+      .post-content {
+        max-width: 100%;
       }
       footer {
         padding: 0.85rem;
