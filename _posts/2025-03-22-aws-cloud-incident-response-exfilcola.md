@@ -2,91 +2,130 @@
 layout: post
 title: "AWS Cloud Incident Response — ExfilCola"
 tags: [Incident Response]
-excerpt: "A simulated AWS breach via the Wiz Cloud Hunting Games CTF — IAM role abuse, CloudTrail forensics, lateral movement across accounts, and recovering deleted auth logs with overlayfs."
-assets_dir: aws-cloud-incident-response-exfilcola
+excerpt: "A simulated AWS breach via the Wiz Cloud Hunting Games CTF — IAM lateral movement, Lambda code injection, CloudTrail forensics, overlayfs log recovery, and cron-based persistence."
 ---
 
-{% assign asset_base = '/assets/' | append: page.assets_dir %}
-
 > **Wiz Cloud Hunting Games CTF** · Cloud Forensics · MITRE ATT&CK · AWS IR  
-> *Techniques: IAM role abuse · CloudTrail analysis · Lateral movement · Lambda code injection · Overlayfs log recovery*
+> *Techniques: IAM lateral movement · Lambda code injection · CloudTrail analysis · Overlayfs log recovery · Cron persistence*
 
 ---
 
 ## What happened
 
-This write-up covers my investigation of the Wiz Cloud Hunting Games CTF — a hands-on cloud incident response challenge built around a simulated AWS breach. The scenario: a fictional startup called ExfilCola receives a data extortion email from a threat group calling themselves FizzShadows, claiming to have stolen their proprietary soda recipe. The task is to determine whether the claim is real, trace the full attack chain, and understand what failed architecturally.
+A fictional startup called ExfilCola receives a data extortion email from a threat group calling themselves FizzShadows. They claim to have stolen the company's proprietary soda recipe and are demanding 75 Bitcoin to keep it private. No prior alert fired. No detection triggered. The investigation starts from a ransom note and a set of AWS logs.
 
-What makes this CTF worth writing up isn't the fictional wrapper — it's that the attack techniques are entirely realistic. No zero-days, no gimmicks. Just IAM misconfiguration, role abuse, and an attacker moving quietly through a cloud environment using APIs that look completely normal to default monitoring.
+This write-up covers my investigation of the Wiz Cloud Hunting Games CTF — a hands-on cloud incident response challenge built around a realistic AWS breach scenario. What makes it worth documenting isn't the fictional wrapper. It's that every technique the attacker used — IAM lateral movement, Lambda code injection, SSH pivoting, log deletion — is entirely realistic and maps cleanly to what defenders encounter in production environments.
 
-The investigation ran backwards — from the ransom email to the exfiltration, then back through the identity chain to the entry point. What made this tractable was logging hygiene: S3 data events and CloudTrail were both enabled, leaving the identity trail intact even after the attacker attempted to cover their tracks on the EC2 host. The sharpest moment was the overlayfs recovery — auth logs had been deleted, but the underlying filesystem layer preserved them, one unmount command away from a dead end becoming a confirmed lateral movement path.
-
-The sections below map the full attack chain to MITRE ATT&CK, surface the detection gaps, and draw out the architectural failures that made this breach possible.
+The investigation ran backwards, as IR always does. Starting from the confirmed exfiltration, tracing back through a compromised IAM identity, a manipulated Lambda, an EC2 host, SSH lateral movement from a PostgreSQL service, and eventually to a persistent cron-based foothold that had been quietly harvesting credentials the entire time. The sections below map the full chain to MITRE ATT&CK, call out the architectural failures at each stage, and draw out what should have existed instead.
 
 ---
 
 ## ATT&CK coverage
 
-> [View full ATT&CK Navigator layer]({{ asset_base | append: '/attack-navigator/layer.json' | relative_url }})
+The attack spans the full ATT&CK kill chain — from initial access through to exfiltration and persistence — using only legitimate AWS APIs and standard Linux tooling. No exploits, no zero-days. Every action the attacker took is indistinguishable from normal operations without behavioural baselines or anomaly detection in place. That's what makes cloud intrusions hard to catch in real time and why logging hygiene matters so much after the fact.
 
-![MITRE ATT&CK Heatmap]({{ asset_base | append: '/attack-navigator/heatmap.png' | relative_url }})
-
-The attack covered a broad range of the ATT&CK cloud matrix — most phases from initial access through to exfiltration and defence evasion. What stood out was how much ground was covered using only legitimate AWS APIs. Every action the attacker took — assuming roles, listing buckets, updating Lambda code, writing to Secrets Manager — is indistinguishable from normal operations without behavioural baselines. That's the core challenge of cloud IR: the attacker's tools are your tools.
-
-The defence evasion technique was particularly notable. Deleting auth logs from the EC2 host is a reasonable countermeasure against forensic investigation — but it assumes the filesystem is what it appears to be. Overlayfs preserved the underlying layer, and that assumption cost the attacker their anonymity.
-
-| Technique ID | Name | Phase | Evidence |
+| Technique ID | Name | Tactic | Observed |
 |---|---|---|---|
-| [T1078.004](https://attack.mitre.org/techniques/T1078/004/) | Valid Accounts: Cloud Accounts | Initial Access | Compromised IAM principal; initial access visible in CloudTrail `userIdentity` / session context |
-| [T1526](https://attack.mitre.org/techniques/T1526/) | Cloud Service Discovery | Discovery | ListBuckets, ListObjects reconnaissance |
-| [T1069.003](https://attack.mitre.org/techniques/T1069/003/) | Permission Groups Discovery: Cloud Groups | Discovery | IAM and permission-group style discovery via AWS APIs (CloudTrail) |
-| [T1548](https://attack.mitre.org/techniques/T1548/) | Abuse Elevation Control Mechanism | Privilege Escalation | AssumeRole chain across IAM identities |
-| [T1098.001](https://attack.mitre.org/techniques/T1098/001/) | Account Manipulation: Additional Cloud Credentials | Persistence | PutSecretValue — IAM keys stored in Secrets Manager |
-| [T1530](https://attack.mitre.org/techniques/T1530/) | Data from Cloud Storage Object | Exfiltration | GetObject — bulk read of recipe bucket |
-| [T1021.004](https://attack.mitre.org/techniques/T1021/004/) | Remote Services: SSH | Lateral Movement | SSH into ssh-fetcher host |
-| [T1059](https://attack.mitre.org/techniques/T1059/) | Command and Scripting Interpreter | Execution | logger.py — outbound exfiltration via fetcher.exfilcola.io:8443 |
-| [T1070.002](https://attack.mitre.org/techniques/T1070/002/) | Indicator Removal: Clear Linux Logs | Defence Evasion | Auth log deletion — recovered via overlayfs |
+| [T1078](https://attack.mitre.org/techniques/T1078/) | Valid Accounts | Initial Access | Compromised IAM user credentials used to gain foothold |
+| [T1053](https://attack.mitre.org/techniques/T1053/) | Scheduled Task/Job | Persistence | Cron job under postgres user — base64-encoded pg_sched script |
+| [T1021](https://attack.mitre.org/techniques/T1021/) | Remote Services | Lateral Movement | SSH from PostgreSQL host into ssh-fetcher EC2 |
+| [T1552](https://attack.mitre.org/techniques/T1552/) | Unsecured Credentials | Credential Access | IAM credentials harvested and streamed to external C2 |
+| [T1548](https://attack.mitre.org/techniques/T1548/) | Abuse Elevation Control Mechanism | Privilege Escalation | AssumeRole chain across IAM identities to reach lambdaWorker and Moe.Jito |
+| [T1069](https://attack.mitre.org/techniques/T1069/) | Permission Groups Discovery | Discovery | ListAttachedUserPolicies — enumerating accessible permissions |
+| [T1098](https://attack.mitre.org/techniques/T1098/) | Account Manipulation | Persistence | CreateAccessKey / DeleteAccessKey — credential manipulation |
+| [T1059](https://attack.mitre.org/techniques/T1059/) | Command and Scripting Interpreter | Execution | logger.py — outbound SSL socket to fetcher.exfilcola.io:8443 |
+| [T1526](https://attack.mitre.org/techniques/T1526/) | Cloud Service Discovery | Discovery | ListBuckets, ListObjects — scoping ExfilCola's storage |
+| [T1530](https://attack.mitre.org/techniques/T1530/) | Data from Cloud Storage Object | Exfiltration | Bulk GetObject on recipe bucket — PutObject to plant ransom letter |
+| [T1070](https://attack.mitre.org/techniques/T1070/) | Indicator Removal | Defence Evasion | Auth log deletion from /var/log — recovered via overlayfs |
+
+---
+
+## The attack chain
+
+Working backwards from the extortion email to the initial entry point, the full chain looked like this:
+
+```
+PostgreSQL host — initial foothold (method not captured in logs)
+        ↓
+Cron persistence established — pg_sched script under postgres user
+IAM credentials harvested via ncat → FizzShadows C2 (34.118.239.100:4444)
+        ↓
+SSH lateral movement into ssh-fetcher EC2 (i-0a44002eec2f16c25)
+Auth logs deleted from /var/log to cover tracks
+        ↓
+IAM lateral movement through harvested credentials
+lambdaWorker role reached
+        ↓
+UpdateFunctionCode → credsrotator Lambda injected with malicious code
+IAM keys exfiltrated via logger.py — SSL socket to fetcher.exfilcola.io:8443
+        ↓
+Moe.Jito credentials obtained via IAM lateral movement
+ListAttachedUserPolicies — scoping available permissions
+AssumeRole → S3Reader/drinks session
+        ↓
+Reconnaissance: ListBuckets, ListObjects
+GetObject — bulk read of recipe bucket
+PutObject — ransom letter planted in soda-vault
+        ↓
+Ransom email sent to ExfilCola
+```
+
+> The initial access method into the PostgreSQL host was not captured in the available log sources — itself a gap in visibility that reflects a missing detective control.
 
 ---
 
 ## Key findings
 
-**Finding 1 — Identity columns are the wrong place to look after a role pivot**
+**Finding 1 — Identity pivots disappear if you search the wrong field**
 
-The first pivot point in the investigation: searching CloudTrail by the compromised ARN returned a single result — a ListBuckets call with a blank `useridentity_username`. A direct IAM user always populates that field. A blank username with an AssumedRole identity type means the attacker was operating under temporary STS credentials — and had already moved on.
+Querying CloudTrail for the S3Reader ARN returned a single result: a `ListBuckets` call with a blank `useridentity_username`. A blank username on an `AssumedRole` identity type means temporary STS credentials — the attacker had already moved on from their original identity. Searching the identity columns further would have been a dead end.
 
-The break came from searching `requestparameters` rather than the identity columns. When AssumeRole is called, the target role is recorded in the parameters, not in the caller's identity. Identity columns tell you who made the call. Parameters tell you what they were becoming. Every hop in the lateral movement chain required this same technique — and every hop would have been a dead end without it. This is the most transferable lesson from the investigation: cloud identity pivots are invisible to analysts searching the wrong field.
+The break came from searching `requestparameters` instead. When an `AssumeRole` call is made, the target role is recorded in the parameters, not in the caller's identity fields. Filtering for the S3Reader role name and session name `drinks` across both request and response parameters surfaced the event and identified the underlying user: `Moe.Jito`. Identity columns show who called. Parameters show what they became. Every hop in a lateral movement chain is invisible without that distinction.
 
-**Finding 2 — Lambda weaponisation is harder to detect than new resource creation**
+**Finding 2 — Lambda code injection weaponises trust that already exists**
 
-Once the attacker reached the target EC2 instance (challenge lab host, role `lambdaWorker`), they called `UpdateFunctionCode` against an existing Lambda named `credsrotator` — a legitimate credential rotation function with elevated Secrets Manager permissions. The injected code executed `PutSecretValue`, storing stolen IAM access keys in a Secrets Manager entry used for key material in the scenario.
+Tracing further back, the `UpdateFunctionCode` event against the `credsrotator` Lambda — a legitimate credential rotation function — was called from the `lambdaWorker` role attached to the compromised EC2 instance. The function already held elevated Secrets Manager permissions by design. Injecting malicious code into it rather than creating new infrastructure meant the attacker inherited existing trust and an execution pattern indistinguishable from normal operations.
 
-This technique is more operationally sound than spinning up new infrastructure. The Lambda was already trusted, its permissions were pre-existing, and its execution pattern blended into normal operations. There was no new resource to detect, no unusual IAM entity — just a function that had always existed doing something slightly different. Without code signing or alerting on `UpdateFunctionCode` events from unexpected principals, this change was effectively invisible.
+There was no new resource to detect. No unusual IAM entity. No code signing. No alerting on `UpdateFunctionCode` callers. The Lambda ran as it always had — just doing something different.
 
-**Finding 3 — Deleted logs aren't always gone**
+**Finding 3 — Deleting logs is only effective if you understand the filesystem**
 
-On the compromised EC2 host, auth logs had been deleted — a reasonable countermeasure. But the filesystem was running overlayfs, which maintains a lower read-only layer beneath the writable upper layer. Unmounting the upper layer exposed the preserved auth logs underneath, recovering the source address seen in auth data and confirming the SSH lateral movement path.
+On the EC2 host, auth logs had been removed from `/var/log` — a reasonable countermeasure. But running `findmnt` revealed the filesystem was overlayfs with multiple mounts stacked at the same path. The attacker's deletion only affected the top-most writable layer. Running `umount /var/log` peeled it back, exposing the read-only lower layer with the original auth logs intact.
 
-The lesson isn't just forensic technique — it's that attacker OPSEC assumptions about cloud infrastructure are often wrong. Deleting a file on what appears to be a standard Linux filesystem doesn't account for container runtimes, layered filesystems, or snapshot-based storage. Cloud environments preserve more than attackers expect.
+Filtering those logs for accepted SSH connections under `postgresql-user` confirmed lateral movement from the PostgreSQL host into ssh-fetcher. The attacker's OPSEC assumption about log deletion didn't account for containerised filesystem layers — and that assumption is what broke the chain open.
+
+**Finding 4 — The persistence mechanism revealed the full operation**
+
+On the PostgreSQL host, a cron job under the `postgres` user referenced a file called `pg_sched` — named to blend in as a legitimate scheduler task. Base64-decoding it produced a bash script that enumerated attached IAM policies across the environment looking for overpermissioned roles, searched for SSH keys to spread laterally, streamed harvested credentials via `ncat` to the C2, and cleared its own bash history on exit.
+
+Credentials embedded in the script authenticated to a REST API on the C2 host at `34.118.239.100`. The stolen recipe file was listed there, confirming the exfiltration claim and providing the path to remediation — a single authenticated DELETE request against the attacker's own server.
 
 ---
 
 ## Architectural lessons
 
-The breach was enabled by a cluster of compounding failures, none of which were individually catastrophic but together removed every natural containment point in the environment. The most significant was IAM design. Roles were over-trusted — policies allowed assumption from broad principals without source conditions, and session policies were never applied at assumption time. This meant that every role compromise was a full compromise: the attacker inherited complete permissions with no restriction on scope or duration. Combined with S3 permissions that granted read access at the bucket level rather than the object prefix level, a single compromised credential was sufficient to exfiltrate everything. The Lambda execution role compounded this — `credsrotator` had Secrets Manager write access scoped to `*` rather than the specific ARNs it actually needed to rotate. The principle of least privilege existed nowhere in this environment in practice.
+**IAM permissions had drifted beyond their intended scope.** The `S3Reader` role held `PutObject` permissions beyond its read function — something that may not have been intentional but had real consequences when the role was compromised. The `credsrotator` Lambda's execution role had Secrets Manager write access scoped to `*` rather than the specific ARNs required for credential rotation. The `lambdaWorker` role had no trust condition on who could call `UpdateFunctionCode`. Scoping each of these to their actual functional requirements — rather than what they might ever need — would have reduced the attacker's options at multiple points in the chain. Regular IAM access reviews and permission boundary enforcement are practical ways to catch this kind of drift before it becomes a liability.
 
-The detection gap was equally significant. No alerts fired during the entire intrusion — not on the AssumeRole chain, not on the bulk S3 reads, not on the `UpdateFunctionCode` call, not on the outbound connection to `fetcher.exfilcola.io:8443`. GuardDuty was either absent or unconfigured for anomaly baselines. CloudTrail data events for S3 — which is where the exfiltration evidence lived — are not enabled by default and carry additional cost, which is a genuine architectural trade-off: the visibility that makes this investigation possible is the visibility that most organisations don't pay for until after an incident. The design fix isn't just technical — it's a risk decision about what logging costs versus what a breach costs. In an environment handling proprietary data, that calculation should be straightforward.
+**Cron-based persistence was not surfaced by available monitoring.** A scheduled task under the `postgres` user was harvesting credentials and maintaining an outbound channel to an external host. Based on the available evidence, this activity was not detected during the period it was active. Host-based controls such as auditd or file integrity monitoring on cron directories, combined with alerting on scheduled task creation under service accounts, would provide visibility into this class of technique. This is particularly relevant on hosts that handle credentials or have network access to sensitive resources.
+
+**Outbound connections to external hosts were not flagged in the affected systems.** Two separate outbound channels were established — `logger.py` to an external host on port 8443, and the `pg_sched` script to a C2 on port 4444. Based on the available evidence, neither was detected at the network layer. Reviewing egress controls and alerting on connections to unknown external destinations on sensitive hosts would reduce the window in which this kind of activity goes unnoticed.
+
+**Two controls materially aided the investigation and are worth highlighting.** CloudTrail management events being enabled and intact allowed the full IAM lateral movement chain to be reconstructed — without them, the identity behind the S3Reader session would have been unattributable. S3 data events being enabled — which is not the AWS default and requires a deliberate configuration decision — made it possible to confirm the exfiltration, identify the responsible ARN, and quantify what was taken. These are good examples of logging decisions that directly translate into investigative capability when they are needed. The overlayfs filesystem structure on the EC2 host also proved significant: auth logs the attacker had deleted were preserved in a lower filesystem layer and recovered via `umount`, confirming the SSH lateral movement path.
 
 ---
 
-## Supporting artifacts
+## Architectural gaps — summary
 
-| Artifact | Description |
-|---|---|
-| [`attack-navigator/layer.json`]({{ asset_base | append: '/attack-navigator/layer.json' | relative_url }}) | ATT&CK Navigator layer — import at [attack.mitre.org](https://mitre-attack.github.io/attack-navigator/) |
-| [`queries/cloudtrail.sql`]({{ asset_base | append: '/queries/cloudtrail.sql' | relative_url }}) | CloudTrail SQL queries used during investigation |
-| [`queries/s3_events.sql`]({{ asset_base | append: '/queries/s3_events.sql' | relative_url }}) | S3 data event queries |
-| [`evidence/`]({{ asset_base | append: '/evidence/' | relative_url }}) | Sanitised log snippets and screenshots |
+| Gap | What happened | What should exist |
+|---|---|---|
+| Host-level monitoring | Cron persistence ran undetected on PostgreSQL host | EDR or auditd on all hosts; alerting on cron job creation under service accounts |
+| Credential hygiene | Plaintext credentials hardcoded in a cron script | Secrets Manager for all credentials; no secrets on disk |
+| Egress filtering | Unrestricted outbound from EC2 and PostgreSQL host | Security group egress rules; alerting on connections to unknown external IPs |
+| S3 role permissions | S3Reader held PutObject — name and permissions misaligned | IAM roles scoped strictly to declared function; regular permission audits |
+| Lambda code integrity | No controls on UpdateFunctionCode callers | Code signing enforced; CloudWatch alert on unexpected UpdateFunctionCode |
+| Lambda execution role | credsrotator had broad Secrets Manager write access | Permissions scoped to specific secret ARNs only |
+| STS session policies | Assumed sessions inherited full role permissions | Session policies applied at assumption time to restrict scope |
+| Detection coverage | No alerts fired end-to-end across the intrusion | GuardDuty with anomaly baselines; CloudTrail S3 data events enabled |
 
 ---
 

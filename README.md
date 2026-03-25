@@ -54,29 +54,22 @@ Optional lines (add only if you need them):
 | Field | When to use |
 |--------|-------------|
 | `excerpt: "Short summary"` | Shown on the homepage when `show_excerpts: true` in `_config.yml`. If omitted, Jekyll uses the first paragraph. |
-| `assets_dir: <slug>` | Required when you use **`assets/<slug>/`**. Value must match the slug from the filename (e.g. `aws-cloud-incident-response-exfilcola`). |
 
 The **first** entry in `tags` is shown on the homepage and above the post title.
 
-### 4. If you use `assets_dir`: base path + links
+### 4. If you use `assets/<slug>/`: link files directly
 
-Immediately **after** the closing `---` of the front matter, before normal Markdown, add:
-
-```liquid
-{% assign asset_base = '/assets/' | append: page.assets_dir %}
-```
-
-Then reference files with **`relative_url`** so `baseurl` (`/locus`) is applied on GitHub Pages:
+Reference files with **`relative_url`** so `baseurl` (`/locus`) is applied on GitHub Pages:
 
 ```liquid
-![Description]({{ asset_base | append: '/evidence/screenshot.png' | relative_url }})
+![Description]({{ '/assets/aws-cloud-incident-response-exfilcola/evidence/screenshot.png' | relative_url }})
 ```
 
 ```liquid
-[Download layer]({{ asset_base | append: '/attack-navigator/layer.json' | relative_url }})
+[Download layer]({{ '/assets/aws-cloud-incident-response-exfilcola/attack-navigator/layer.json' | relative_url }})
 ```
 
-Posts with **no** `assets/<slug>/` folder should **not** set `assets_dir` and should **not** include the `asset_base` line.
+Posts with no extra files can skip this and use plain markdown text/content.
 
 ### 5. Body
 
