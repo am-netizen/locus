@@ -5,11 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% if page.title %}{{ page.title }} — {% endif %}A.M.</title>
   <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}" />
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem("theme");
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var theme = savedTheme || (prefersDark ? "dark" : "dark");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
+      --bg: #0f172a;
+      --surface: #111c31;
+      --text: #e5e7eb;
+      --muted: #c0cad7;
+      --soft: #94a3b8;
+      --brand: #2dd4bf;
+      --brand-soft: #0f2939;
+      --border: #26364f;
+      --code-bg: #1f2a44;
+      --shadow: 0 10px 28px rgba(2, 6, 23, 0.45);
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    :root[data-theme="light"] {
       --bg: #f8fafc;
       --surface: #ffffff;
       --text: #0f172a;
@@ -20,8 +42,6 @@
       --border: #dbe4ee;
       --code-bg: #f1f5f9;
       --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-      --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     * { box-sizing: border-box; }
     *::before, *::after { box-sizing: border-box; }
@@ -77,6 +97,11 @@
       text-decoration: none;
     }
     .logo span { color: var(--brand); }
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
     nav a {
       font-family: var(--mono);
       font-size: 0.72rem;
@@ -85,10 +110,27 @@
       text-transform: uppercase;
       color: var(--soft);
       text-decoration: none;
-      margin-left: 1.2rem;
+      margin-left: 0.55rem;
       padding: 0.4rem 0.55rem;
       border-radius: 0.4rem;
       transition: color 0.2s;
+    }
+    .theme-toggle {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--soft);
+      border-radius: 999px;
+      padding: 0.38rem 0.62rem;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+    .theme-toggle:hover {
+      color: var(--text);
+      background: var(--code-bg);
     }
     nav a:hover {
       color: var(--text);
@@ -157,7 +199,7 @@
       color: #0f172a;
     }
     .post-content pre {
-      background: #0f172a;
+      background: #0b1220;
       border: 1px solid var(--border);
       padding: 1rem;
       overflow-x: auto;
@@ -170,7 +212,7 @@
       padding: 0.1rem 0 0.1rem 1rem;
       color: var(--muted);
       margin: 1.2rem 0;
-      background: #f8fffe;
+      background: var(--brand-soft);
     }
     .post-content ul, .post-content ol {
       padding-left: 1.2rem;
@@ -213,9 +255,9 @@
       border-color: #cbd8e6;
     }
     .post-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
       gap: 0.8rem;
     }
     .post-title {
@@ -224,19 +266,23 @@
       color: var(--text);
       line-height: 1.4;
       margin: 0;
+      overflow-wrap: anywhere;
     }
     .post-row:hover .post-title { color: #0b5f59; }
     .post-date {
       font-family: var(--mono);
       font-size: 0.7rem;
       color: var(--soft);
-      white-space: nowrap;
+      white-space: normal;
       flex-shrink: 0;
+      text-align: right;
+      max-width: 10ch;
     }
     .post-excerpt {
       font-size: 0.97rem;
       color: var(--muted);
       line-height: 1.68;
+      overflow-wrap: anywhere;
     }
     .post-tag {
       font-family: var(--mono);
@@ -244,6 +290,10 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #0b5f59;
+    :root[data-theme="dark"] .post-header-tag {
+      color: #7fe7db;
+      border-color: #2b5f74;
+    }
     }
     .post-header {
       padding: 0 0 1.4rem;
@@ -300,6 +350,9 @@
         margin-left: 0;
         margin-right: 0.12rem;
       }
+      .theme-toggle {
+        margin-left: 0.12rem;
+      }
       .content {
         padding: 1.3rem 1rem 1.6rem;
       }
@@ -307,11 +360,12 @@
         font-size: 1.04rem;
       }
       .post-top {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 0.3rem;
       }
       .post-date {
-        white-space: normal;
+        max-width: none;
+        text-align: left;
       }
       footer {
         padding: 1rem;
@@ -328,6 +382,7 @@
       <nav>
         <a href="{{ "/" | relative_url }}">Writing</a>
         <a href="{{ "/about" | relative_url }}">About</a>
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle color theme">Light</button>
       </nav>
     </header>
     <main class="content" id="main-content">
@@ -338,5 +393,23 @@
       <span>© {{ site.time | date: "%Y" }}</span>
     </footer>
   </div>
+  <script>
+    (function() {
+      var root = document.documentElement;
+      var button = document.getElementById("theme-toggle");
+      if (!button) return;
+      var current = root.getAttribute("data-theme") || "dark";
+      button.textContent = current === "dark" ? "Light" : "Dark";
+      button.setAttribute("aria-pressed", current === "dark" ? "false" : "true");
+      button.addEventListener("click", function() {
+        var active = root.getAttribute("data-theme") || "dark";
+        var next = active === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        button.textContent = next === "dark" ? "Light" : "Dark";
+        button.setAttribute("aria-pressed", next === "dark" ? "false" : "true");
+      });
+    })();
+  </script>
 </body>
 </html>
