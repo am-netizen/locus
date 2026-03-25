@@ -18,30 +18,36 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0f172a;
-      --surface: #111c31;
-      --text: #e5e7eb;
-      --muted: #c0cad7;
-      --soft: #94a3b8;
-      --brand: #2dd4bf;
-      --brand-soft: #0f2939;
-      --border: #26364f;
-      --code-bg: #1f2a44;
-      --shadow: 0 10px 28px rgba(2, 6, 23, 0.45);
+      --bg: #0b1220;
+      --surface: #121a2b;
+      --surface-2: #0f1728;
+      --text: #e6edf6;
+      --muted: #c4d0df;
+      --soft: #95a8bf;
+      --brand: #44d4c3;
+      --brand-soft: #123243;
+      --border: #28364d;
+      --code-bg: #0d1526;
+      --card-hover: #16233a;
+      --focus: #38bdf8;
+      --shadow: 0 12px 32px rgba(2, 6, 23, 0.42);
       --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     :root[data-theme="light"] {
-      --bg: #f8fafc;
+      --bg: #f5f7fb;
       --surface: #ffffff;
+      --surface-2: #f8fafc;
       --text: #0f172a;
-      --muted: #475569;
+      --muted: #334155;
       --soft: #64748b;
       --brand: #0f766e;
       --brand-soft: #ccfbf1;
       --border: #dbe4ee;
       --code-bg: #f1f5f9;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      --card-hover: #f1f5f9;
+      --focus: #0284c7;
+      --shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
     }
     * { box-sizing: border-box; }
     *::before, *::after { box-sizing: border-box; }
@@ -50,8 +56,8 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--sans);
-      font-size: 18px;
-      line-height: 1.75;
+      font-size: clamp(16px, 1rem + 0.2vw, 18px);
+      line-height: 1.7;
       -webkit-font-smoothing: antialiased;
       margin: 0;
     }
@@ -72,26 +78,26 @@
       top: 1rem;
     }
     .wrap {
-      width: min(900px, calc(100% - 2rem));
-      margin: 1.5rem auto;
+      width: min(960px, calc(100% - 1.5rem));
+      margin: 1rem auto;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 1rem;
+      border-radius: 0.9rem;
       box-shadow: var(--shadow);
       overflow: clip;
     }
     header {
-      padding: 1.4rem 2rem;
+      padding: 1rem 1.35rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
-      gap: 1rem;
+      gap: 0.75rem;
     }
     .logo {
       font-family: var(--mono);
-      font-size: 0.84rem;
-      letter-spacing: 0.1em;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
       font-weight: 500;
       color: var(--text);
       text-decoration: none;
@@ -100,33 +106,34 @@
     nav {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.2rem;
+      flex-wrap: wrap;
     }
     nav a {
       font-family: var(--mono);
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       font-weight: 500;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--soft);
       text-decoration: none;
-      margin-left: 0.55rem;
-      padding: 0.4rem 0.55rem;
+      margin-left: 0.2rem;
+      padding: 0.45rem 0.62rem;
       border-radius: 0.4rem;
-      transition: color 0.2s;
+      transition: color 0.2s, background 0.2s;
     }
     .theme-toggle {
       font-family: var(--mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
+      font-size: 0.74rem;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--soft);
       border-radius: 999px;
-      padding: 0.38rem 0.62rem;
+      padding: 0.42rem 0.68rem;
       cursor: pointer;
-      margin-left: 0.5rem;
+      margin-left: 0.3rem;
     }
     .theme-toggle:hover {
       color: var(--text);
@@ -137,10 +144,10 @@
       background: var(--code-bg);
     }
     .content {
-      padding: 2.2rem 2rem 2.6rem;
+      padding: 1.6rem 1.35rem 2rem;
     }
     footer {
-      padding: 1.2rem 2rem 1.5rem;
+      padding: 1rem 1.35rem;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
@@ -148,39 +155,43 @@
     }
     footer span {
       font-family: var(--mono);
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       color: var(--soft);
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
     }
     .home-intro {
-      margin-bottom: 2rem;
-      padding: 0 0 2rem;
+      margin-bottom: 1.6rem;
+      padding: 0 0 1.5rem;
       border-bottom: 1px solid var(--border);
     }
     .home-intro p {
       margin: 0;
-      max-width: 66ch;
-      font-size: 1.12rem;
-      line-height: 1.85;
+      max-width: 68ch;
+      font-size: clamp(1.02rem, 0.95rem + 0.25vw, 1.16rem);
+      line-height: 1.8;
       color: var(--muted);
     }
     .section-label {
       margin: 0 0 1.2rem;
       font-family: var(--mono);
-      font-size: 0.74rem;
+      font-size: 0.76rem;
       font-weight: 500;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--soft);
     }
+    .post-content {
+      max-width: 72ch;
+      margin: 0 auto;
+    }
     .post-content h1, .post-content h2, .post-content h3 {
-      line-height: 1.28;
-      margin: 2rem 0 0.8rem;
+      line-height: 1.3;
+      margin: 1.8rem 0 0.7rem;
       color: var(--text);
     }
-    .post-content h1 { font-size: clamp(1.65rem, 4vw, 2.15rem); }
-    .post-content h2 { font-size: clamp(1.28rem, 3vw, 1.58rem); }
+    .post-content h1 { font-size: clamp(1.6rem, 1.35rem + 1.2vw, 2rem); }
+    .post-content h2 { font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem); }
     .post-content h3 { font-size: 1.1rem; }
     .post-content p { margin-bottom: 1rem; color: var(--muted); }
     .post-content a {
@@ -189,27 +200,27 @@
       text-decoration-thickness: 0.08em;
       text-underline-offset: 0.14em;
     }
-    .post-content a:hover { color: #0b5f59; }
+    .post-content a:hover { color: var(--text); }
     .post-content code {
       font-family: var(--mono);
-      font-size: 0.84rem;
+      font-size: 0.86rem;
       background: var(--code-bg);
-      padding: 0.15rem 0.32rem;
+      padding: 0.15rem 0.35rem;
       border-radius: 0.35rem;
-      color: #0f172a;
+      color: var(--text);
     }
     .post-content pre {
-      background: #0b1220;
+      background: var(--code-bg);
       border: 1px solid var(--border);
-      padding: 1rem;
+      padding: 0.95rem;
       overflow-x: auto;
       margin: 1.2rem 0;
       border-radius: 0.65rem;
     }
-    .post-content pre code { background: none; padding: 0; color: #e2e8f0; }
+    .post-content pre code { background: none; padding: 0; color: var(--text); }
     .post-content blockquote {
       border-left: 4px solid var(--brand);
-      padding: 0.1rem 0 0.1rem 1rem;
+      padding: 0.2rem 0 0.2rem 0.9rem;
       color: var(--muted);
       margin: 1.2rem 0;
       background: var(--brand-soft);
@@ -224,7 +235,9 @@
       width: 100%;
       border-collapse: collapse;
       margin: 1.4rem 0;
-      font-size: 0.95rem;
+      font-size: 0.94rem;
+      display: block;
+      overflow-x: auto;
     }
     .post-content th, .post-content td {
       border: 1px solid var(--border);
@@ -240,19 +253,19 @@
     .post-row {
       display: flex;
       flex-direction: column;
-      gap: 0.52rem;
-      padding: 1.2rem;
-      border-bottom: 1px solid var(--border);
+      gap: 0.55rem;
+      padding: 1rem 1.05rem;
+      border: 1px solid var(--border);
       text-decoration: none;
       color: inherit;
-      border-radius: 0.7rem;
+      border-radius: 0.72rem;
       transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+      margin-bottom: 0.8rem;
     }
-    .post-row:first-of-type { border-top: 1px solid var(--border); }
     .post-row:hover {
       transform: translateY(-1px);
-      background: #f8fbff;
-      border-color: #cbd8e6;
+      background: var(--card-hover);
+      border-color: var(--brand);
     }
     .post-top {
       display: grid;
@@ -261,114 +274,114 @@
       gap: 0.8rem;
     }
     .post-title {
-      font-size: 1.12rem;
+      font-size: clamp(1.03rem, 1rem + 0.2vw, 1.18rem);
       font-weight: 600;
       color: var(--text);
-      line-height: 1.4;
+      line-height: 1.35;
       margin: 0;
       overflow-wrap: anywhere;
     }
-    .post-row:hover .post-title { color: #0b5f59; }
+    .post-row:hover .post-title { color: var(--brand); }
     .post-date {
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.74rem;
       color: var(--soft);
       white-space: normal;
       flex-shrink: 0;
       text-align: right;
-      max-width: 10ch;
+      max-width: 12ch;
     }
     .post-excerpt {
-      font-size: 0.97rem;
+      font-size: 0.98rem;
       color: var(--muted);
-      line-height: 1.68;
+      line-height: 1.6;
       overflow-wrap: anywhere;
     }
     .post-tag {
       font-family: var(--mono);
-      font-size: 0.67rem;
-      letter-spacing: 0.08em;
+      font-size: 0.73rem;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: #0b5f59;
-    :root[data-theme="dark"] .post-header-tag {
-      color: #7fe7db;
-      border-color: #2b5f74;
-    }
+      color: var(--brand);
     }
     .post-header {
-      padding: 0 0 1.4rem;
+      padding: 0 0 1.1rem;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 1.6rem;
+      margin-bottom: 1.2rem;
     }
     .post-header-tag {
       font-family: var(--mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.07em;
+      font-size: 0.74rem;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: #0b5f59;
-      margin-bottom: 0.65rem;
+      color: var(--brand);
+      margin-bottom: 0.55rem;
       display: inline-block;
       background: var(--brand-soft);
-      border: 1px solid #99f6e4;
+      border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 0.2rem 0.55rem;
+      padding: 0.2rem 0.52rem;
     }
     .post-header h1 {
-      font-size: clamp(1.7rem, 4vw, 2.35rem);
+      font-size: clamp(1.55rem, 1.3rem + 1.2vw, 2.2rem);
       font-weight: 700;
-      line-height: 1.25;
+      line-height: 1.2;
       color: var(--text);
-      margin: 0 0 0.85rem;
+      margin: 0 0 0.65rem;
     }
     .post-header-meta {
       font-family: var(--mono);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--soft);
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
     }
     :focus-visible {
-      outline: 3px solid #0ea5e9;
+      outline: 3px solid var(--focus);
       outline-offset: 2px;
       border-radius: 0.25rem;
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
     @media (max-width: 760px) {
       .wrap {
-        width: min(100%, calc(100% - 0.75rem));
-        margin: 0.35rem auto;
-        border-radius: 0.8rem;
+        width: min(100%, calc(100% - 0.5rem));
+        margin: 0.25rem auto;
+        border-radius: 0.6rem;
       }
       header {
-        padding: 1rem 1rem 0.9rem;
+        padding: 0.85rem 0.85rem 0.8rem;
         flex-direction: column;
         align-items: flex-start;
       }
-      nav {
-        margin-left: -0.45rem;
-      }
       nav a {
         margin-left: 0;
-        margin-right: 0.12rem;
+        margin-right: 0.08rem;
       }
       .theme-toggle {
-        margin-left: 0.12rem;
+        margin-left: 0.08rem;
       }
       .content {
-        padding: 1.3rem 1rem 1.6rem;
+        padding: 1.15rem 0.85rem 1.3rem;
       }
       .home-intro p {
-        font-size: 1.04rem;
+        font-size: 1rem;
       }
       .post-top {
         grid-template-columns: 1fr;
-        gap: 0.3rem;
+        gap: 0.25rem;
       }
       .post-date {
         max-width: none;
         text-align: left;
       }
       footer {
-        padding: 1rem;
+        padding: 0.85rem;
         flex-direction: column;
       }
     }
