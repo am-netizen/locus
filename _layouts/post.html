@@ -2,14 +2,16 @@
 layout: default
 ---
 
-<div class="post-header">
-  {% if page.tags[0] %}
-  <span class="post-header-tag">{{ page.tags[0] }}</span>
-  {% endif %}
-  <h1>{{ page.title }}</h1>
-  <div class="post-header-meta">{{ page.date | date: "%B %d, %Y" }}</div>
-</div>
+<article>
+  <header class="post-header">
+    {% if page.tags[0] %}
+    <span class="post-header-tag">{{ page.tags[0] }}</span>
+    {% endif %}
+    <h1>{{ page.title }}</h1>
+    <div class="post-header-meta">{{ page.date | date: "%B %d, %Y" }}</div>
+  </header>
 
-<div class="post-content">
-  {{ content }}
-</div>
+  <div class="post-content">
+    {{ content }}
+  </div>
+</article>
