@@ -1,7 +1,7 @@
 title: A.M.
 description: Writing about security, risk, and how things actually break.
 url: "https://amahmud01.github.io"
-baseurl: "/locus"
+baseurl: "/blog"
 permalink: /:year/:month/:day/:title/
 markdown: kramdown
 show_excerpts: true
