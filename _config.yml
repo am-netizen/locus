@@ -1,5 +1,5 @@
 title: A.M.
-description: Writing about security, risk, and how things actually break.
+description: Writing about cybersecurity, risk, and resilient security architecture.
 url: "https://amahmud01.github.io"
 baseurl: "/blog"
 permalink: /:year/:month/:day/:title/
