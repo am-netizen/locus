@@ -129,4 +129,4 @@ Credentials embedded in the script authenticated to a REST API on C2 at `34.118.
 
 ---
 
-*Part of my [security portfolio](https://github.com/am-netizen), mapping hands-on work to real-world attack patterns.*
+*Part of my [security portfolio](https://github.com/amahmud01), mapping hands-on work to real-world attack patterns.*

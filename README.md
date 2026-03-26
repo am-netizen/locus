@@ -1,6 +1,6 @@
 # Locus — Jekyll blog
 
-Site: [https://am-netizen.github.io/locus](https://am-netizen.github.io/locus).  
+Site: [https://amahmud01.github.io/locus](https://amahmud01.github.io/locus).  
 GitHub Pages builds this repo with Jekyll. There is **no theme**; layout and styles live in `_layouts/`.
 
 ---
@@ -17,7 +17,7 @@ Create **`_posts/YYYY-MM-DD-<slug>.md`**.
 
 The live post URL will look like:
 
-`https://am-netizen.github.io/locus/2025/03/22/aws-cloud-incident-response-exfilcola/`  
+`https://amahmud01.github.io/locus/2026/03/11/aws-cloud-incident-response-exfilcola/`  
 (paths follow `_config.yml`: `permalink: /:year/:month/:day/:title/` and `baseurl: "/locus"`).
 
 ### 2. (Optional) Add files for that post under `assets/`

@@ -1,6 +1,6 @@
 title: A.M.
 description: Writing about security, risk, and how things actually break.
-url: "https://am-netizen.github.io"
+url: "https://amahmud01.github.io"
 baseurl: "/locus"
 permalink: /:year/:month/:day/:title/
 markdown: kramdown
