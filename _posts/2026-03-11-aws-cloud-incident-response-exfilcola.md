@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "AWS Cloud Incident Response — ExfilCola"
+categories: [Cloud Security, Incident Response, Security Architecture]
 tags: [Incident Response]
 excerpt: "A realistic AWS breach simulation covering IAM pivots, Lambda tampering, SSH movement, and what CloudTrail revealed during incident response."
 ---
