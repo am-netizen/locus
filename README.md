@@ -1,16 +1,7 @@
 # A.M. Blog
 
-Professional writing on cybersecurity, security risk, cloud security, and security architecture.
+Personal cybersecurity blog focused on risk, cloud security, and resilient security architecture.
 
 Live site: [https://amahmud01.github.io/blog](https://amahmud01.github.io/blog)
 
-## Focus Areas
-
-- Incident response and cloud forensics
-- Security architecture and risk decisions
-- Real-world attack patterns and defensive design
-
-## Tech
-
-- Jekyll on GitHub Pages
-- Custom layout and styling (no theme)
+Built with [Jekyll](https://jekyllrb.com/) using the [Chirpy theme](https://github.com/cotes2020/jekyll-theme-chirpy).
